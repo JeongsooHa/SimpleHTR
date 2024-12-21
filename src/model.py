@@ -9,7 +9,8 @@ from dataloader_iam import Batch
 
 # Disable eager mode
 tf.compat.v1.disable_eager_execution()
-tf.reset_default_graph()
+tf.compat.v1.reset_default_graph()
+
 
 class DecoderType:
     """CTC decoder types."""
