@@ -145,9 +145,10 @@ def infer(model: Model, fn_img: Path) -> None:
     recognized, probability = model.infer_batch(batch, True)
     print(f'Recognized: "{recognized[0]}"')
     print(f'Probability: {probability[0]}')
+    return recognized
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(args_list=None) -> argparse.Namespace:
     """Parses arguments from the command line."""
     parser = argparse.ArgumentParser()
 
@@ -160,18 +161,22 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--img_file', help='Image used for inference.', type=Path, default='../data/word.png')
     parser.add_argument('--early_stopping', help='Early stopping epochs.', type=int, default=25)
     parser.add_argument('--dump', help='Dump output of NN to CSV file(s).', action='store_true')
+    
+    if args_list is not None:
+      return parser.parse_args(args_list)
+    else:
+      return parser.parse_args()
 
-    return parser.parse_args()
 
-
-def main():
+def main(args_list=None):
     """Main function."""
-
     # parse arguments and set CTC decoder
-    args = parse_args()
+    args = parse_args(args_list)
+    
     decoder_mapping = {'bestpath': DecoderType.BestPath,
                        'beamsearch': DecoderType.BeamSearch,
                        'wordbeamsearch': DecoderType.WordBeamSearch}
+
     decoder_type = decoder_mapping[args.decoder]
 
     # train the model
@@ -202,8 +207,10 @@ def main():
     # infer text on test image
     elif args.mode == 'infer':
         model = Model(char_list_from_file(), decoder_type, must_restore=True, dump=args.dump)
-        infer(model, args.img_file)
 
+        result_text = infer(model, args.img_file)
+
+        return result_text
 
 if __name__ == '__main__':
     main()
